@@ -80,6 +80,7 @@ plugins=(
     git
     archlinux
     sudo
+    web-search
     zsh-autosuggestions
     zsh-syntax-highlighting
 )
@@ -103,6 +104,7 @@ alias yayqd='yay -Qdt'
 alias yayqe='yay -Qet'
 alias yayqi='yay -Qi'
 alias fman='compgen -c | fzf | xargs man' # Search for man pages
+alias src='source ~/,zshrc'
 
 # FZF integration + key bindings (CTRL R for fuzzy history finder)
 source <(fzf --zsh)
