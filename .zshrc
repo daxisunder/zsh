@@ -180,7 +180,6 @@ alias mkdir='mkdir -p' # Create parent directories on the fly
 alias ping='ping -c 5'
 alias df='df -h'
 alias du='du -h'
-alias free='free -m'
 alias ysua='yay -Sua' # Update only AUR packages
 alias yayd='yay --devel'
 alias yayrsn='yay -Rsn'
@@ -212,8 +211,7 @@ alias pacrq='sudo pacman -Rsn $(pacman -Qtdq)' # List & remove all unneeded depe
 alias unlock='sudo rm -f /var/lib/pacman/db.lck' # Unlock pacman
 alias ftldr='compgen -c | fzf | xargs tldr' # Search for man pages with tldr + fzf
 alias fman='compgen -c | fzf | xargs man' # Search for man pages with man + fzf
-alias srcz='source ~/.zshrc'
-alias nnn='nnn -d -c -H -r -D -i'
+alias src='source ~/.zshrc'
 alias ttc='tty-clock -C6 -c'
 alias expacs="expac -S '%r/%n: %D'" # List dependencies w/o additional info
 alias nv='nvim'
@@ -243,14 +241,14 @@ eval "$(zoxide init zsh)"
 eval "$(zellij setup --generate-auto-start zsh)"
 
 # Display Pokemon-colorscripts
-#Project page: https://gitlab.com/phoneybadger/pokemon-colorscripts#on-other-distros-and-macos
+# Project page: https://gitlab.com/phoneybadger/pokemon-colorscripts#on-other-distros-and-macos
 #pokemon-colorscripts --no-title -s -r
 
 # Display colorscripts
-colorscript -r
+#colorscript -r
 
 # Auto-start "zombie-zfetch"
-#source $HOME/.config/zfetch/zfetchrc
+source $HOME/.config/zfetch/zfetchrc
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
