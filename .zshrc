@@ -179,11 +179,6 @@ plugins=(
     zsh-vi-mode
 )
 
-# Bind ESC to jj in zsh-vi-mode
-function zvm_config() {
-  ZVM_VI_INSERT_ESCAPE_BINDKEY=jj
-}
-
 # Replace zsh's default readkey engine (ZLE to NEX)
 ZVM_READKEY_ENGINE=$ZVM_READKEY_ENGINE_NEX
 
