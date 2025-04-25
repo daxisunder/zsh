@@ -16,6 +16,9 @@ export PATH="$PATH:/usr/bin/node"
 export PATH="$PATH:~/node_modules/.bin"
 export NODE_EXTRA_CA_CERTS="/etc/ssl/certs/ACCVRAIZ1.pem"
 
+# Emacs path
+export PATH="$HOME/.config/emacs/bin:$PATH"
+
 # OMZ path
 export ZSH="$HOME/.oh-my-zsh"
 
