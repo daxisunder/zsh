@@ -5,6 +5,9 @@
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 export PATH="/usr/bin:$PATH"
 
+# Cargo path
+export PATH="$PATH:$HOME/.cargo/bin"
+
 # Created by `pipx` on 2025-02-10 20:34:32
 export PATH="$PATH:~/.local/bin"
 
@@ -173,6 +176,7 @@ plugins=(
     colorize
     fancy-ctrl-z
     git
+    safe-paste
     sudo
     web-search
     you-should-use
@@ -241,6 +245,7 @@ alias src='source ~/.zshrc'
 alias ttc='tty-clock -C6 -c'
 alias expacs="expac -S '%r/%n: %D'" # List dependencies w/o additional info
 alias n='nvim'
+alias e='emacs -nw'
 alias dv='dirs -v'
 alias grep='grep --color=auto'
 alias egrep='egrep --color=auto'
@@ -251,6 +256,8 @@ alias ssn='sudo shutdown now'
 alias sr='sudo reboot'
 alias jctl='journalctl -p 3' # Show logs with priority 3 and above (errors)
 alias fz="fzf --preview 'bat --color=always -n {}'"
+alias wcp='wl-color-picker'
+alias wcpc='wl-color-picker clipboard'
 
 # FZF integration + key bindings (CTRL R for fuzzy history finder)
 source <(fzf --zsh)
@@ -314,12 +321,11 @@ eval "$(pay-respects zsh)"
 
 # Yazi integration
 function y() {
-  local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
-  yazi "$@" --cwd-file="$tmp"
-  if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-    builtin cd -- "$cwd"
-  fi
-  rm -f -- "$tmp"
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	IFS= read -r -d '' cwd < "$tmp"
+	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+	rm -f -- "$tmp"
 }
 
 # Carapace integration (argument completion)
@@ -342,3 +348,4 @@ source /usr/share/nvm/init-nvm.sh
 
 # Auto-start "zombie-zfetch"
 source $HOME/.config/zfetch/zfetchrc
+eval "$(gh copilot alias -- zsh)"
