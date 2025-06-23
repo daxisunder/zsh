@@ -67,7 +67,7 @@ setopt autocd                  # Change directory just by typing its name
 setopt prompt_subst            # Enable command substitution in prompt
 setopt interactive_comments    # Allow comments in interactive shell
 
-# Load engine (completions)
+# Load completion engine
 autoload -Uz compinit
 
 for dump in ~/.config/zsh/zcompdump(N.mh+24); do
@@ -166,8 +166,7 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
-# Check archlinux plugin commands here
-#https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/archlinux
+# Check archlinux plugin commands here: https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/archlinux
 
 plugins=(
     archlinux
@@ -189,6 +188,7 @@ plugins=(
 # Replace zsh's default readkey engine (ZLE to NEX)
 ZVM_READKEY_ENGINE=$ZVM_READKEY_ENGINE_NEX
 
+# Source Oh My Zsh
 source $ZSH/oh-my-zsh.sh
 
 # Some useful aliases
@@ -333,11 +333,14 @@ export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense' # optional
 zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
 source <(carapace _carapace)
 
-# broot integration
+# Broot integration
 source /home/daxis/.config/broot/launcher/bash/br
 
-# nvm integration
+# NVM integration
 source /usr/share/nvm/init-nvm.sh
+
+# Copilot CLI aliases
+eval "$(gh copilot alias -- zsh)"
 
 # Display Pokemon-colorscripts
 # Project page: https://gitlab.com/phoneybadger/pokemon-colorscripts#on-other-distros-and-macos
@@ -348,4 +351,3 @@ source /usr/share/nvm/init-nvm.sh
 
 # Auto-start "zombie-zfetch"
 source $HOME/.config/zfetch/zfetchrc
-eval "$(gh copilot alias -- zsh)"
