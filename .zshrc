@@ -38,6 +38,12 @@ if [ -d "$SCRIPTS_DIR" ]; then
   find "$SCRIPTS_DIR" -type f -name '.*' -exec chmod +x {} \;
 fi
 
+# Gemini API key
+export GEMINI_API_KEY=AIzaSyAtJSykIBKTTRcktYdrDun9RR7CwmyV9Is
+
+# Google Cloud Project ID
+export GOOGLE_CLOUD_PROJECT=flash-time-444617-a2
+
 # Set prompt
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
@@ -268,8 +274,8 @@ export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS \
   --highlight-line \
   --info=inline-right \
   --ansi \
-  --color=bg+:#283457 \
-  --color=border:#27a1b9 \
+  --color=bg+:#1a1b26 \
+  --color=border:#1a1b26 \
   --color=fg:#c0caf5 \
   --color=gutter:#16161e \
   --color=header:#ff9e64 \
@@ -280,7 +286,7 @@ export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS \
   --color=pointer:#ff007c \
   --color=prompt:#2ac3de \
   --color=query:#c0caf5:regular \
-  --color=scrollbar:#27a1b9 \
+  --color=scrollbar:#1a1b26 \
   --color=separator:#ff9e64 \
   --color=spinner:#ff007c \
 "
