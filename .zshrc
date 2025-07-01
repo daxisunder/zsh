@@ -25,6 +25,10 @@ export PATH="$HOME/.config/emacs/bin:$PATH"
 # OMZ path
 export ZSH="$HOME/.oh-my-zsh"
 
+# ZSH AI integration with local AI models
+export ZSH_AI_PROVIDER="ollama"
+export ZSH_AI_OLLAMA_ModEl="llama3.2"
+
 # XDG runtime dir (onedrive)
 export XDG_RUNTIME_DIR="/run/user/$UID"
 export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
@@ -54,6 +58,18 @@ export BAT_STYLE="full"
 # Set neovim as manpager
 export MANPAGER="nvim +Man!"
 
+# History
+HISTFILE=~/.zsh_history
+HISTSIZE=1000000
+SAVEHIST=1000000
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_ignore_dups
+setopt hist_find_no_dups
+
 # Set some cool ZSH options ('set -o' to see all options)
 setopt no_case_glob            # Case insensitive autocompletions
 setopt no_case_match           # Case insensitive autocompletions
@@ -66,6 +82,10 @@ setopt correct                 # Auto-corrections
 setopt autocd                  # Change directory just by typing its name
 setopt prompt_subst            # Enable command substitution in prompt
 setopt interactive_comments    # Allow comments in interactive shell
+
+# Set comment color (zsh-syntax-highlighting)
+typeset -A ZSH_HIGHLIGHT_STYLES
+ZSH_HIGHLIGHT_STYLES[comment]="fg=#393868"
 
 # Load completion engine
 autoload -Uz compinit
@@ -154,20 +174,7 @@ ex() {
   fi
 }
 
-# History
-HISTFILE=~/.zsh_history
-HISTSIZE=1000000
-SAVEHIST=1000000
-setopt appendhistory
-setopt sharehistory
-setopt hist_ignore_space
-setopt hist_ignore_all_dups
-setopt hist_save_no_dups
-setopt hist_ignore_dups
-setopt hist_find_no_dups
-
 # Check archlinux plugin commands here: https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/archlinux
-
 plugins=(
     archlinux
     auto-notify
@@ -179,6 +186,7 @@ plugins=(
     sudo
     web-search
     you-should-use
+    zsh-ai
     zsh-autopair
     zsh-autosuggestions
     zsh-syntax-highlighting
@@ -352,5 +360,5 @@ eval "$(gh copilot alias -- zsh)"
 # Auto-start "zombie-zfetch"
 source $HOME/.config/zfetch/zfetchrc
 
-# Source API keys
-source $HOME/projects/zsh/api.env
+# Source api keys
+source $HOME/projects/dotfiles/api.env
