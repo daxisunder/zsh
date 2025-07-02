@@ -25,10 +25,16 @@ export PATH="$HOME/.config/emacs/bin:$PATH"
 # OMZ path
 export ZSH="$HOME/.oh-my-zsh"
 
+# Source api keys (has to be sourced before zsh-ai gemini provider)
+source $HOME/projects/dotfiles/api.env
+
 # ZSH AI integration with local AI models
-export ZSH_AI_PROVIDER="ollama" # (gemini, ollama, openai) (gemini doesn't work for now)
-export ZSH_AI_OLLAMA_ModEl="phi3" # (phi3, llama3.2)
+export ZSH_AI_PROVIDER="ollama" # (anthropic (default), ollama (local), gemini, opennai)
+export ZSH_AI_OLLAMA_MODEL="llama3.2" # (phi3, llama3.2)
 export ZSH_AI_GEMINI_MODEL="gemini-2.5-flash"
+export ZSH_AI_ANTHROPIC_MODEL="claude-3-5-sonnet-20241022"
+export ZSH_AI_OPENAI_MODEL="gpt-4o-mini"
+export ZSH_AI_AUTO_FIX="false"  # Set to enable automatic fixes for typos
 
 # XDG runtime dir (onedrive)
 export XDG_RUNTIME_DIR="/run/user/$UID"
@@ -86,7 +92,7 @@ setopt interactive_comments    # Allow comments in interactive shell
 
 # Set comment color (zsh-syntax-highlighting)
 typeset -A ZSH_HIGHLIGHT_STYLES
-ZSH_HIGHLIGHT_STYLES[comment]="fg=#393868"
+ZSH_HIGHLIGHT_STYLES[comment]="fg=#494868"
 
 # Load completion engine
 autoload -Uz compinit
@@ -361,5 +367,3 @@ eval "$(gh copilot alias -- zsh)"
 # Auto-start "zombie-zfetch"
 source $HOME/.config/zfetch/zfetchrc
 
-# Source api keys
-source $HOME/projects/dotfiles/api.env
