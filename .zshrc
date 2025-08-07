@@ -30,23 +30,33 @@ source $HOME/projects/dotfiles/api.env
 
 # ZSH AI integration with local AI models
 export ZSH_AI_PROVIDER="ollama" # (anthropic (default), ollama (local), gemini, opennai)
-export ZSH_AI_OLLAMA_MODEL="llama3.2" # (phi3, llama3.2)
+export ZSH_AI_OLLAMA_MODEL="llama3.2"
 export ZSH_AI_GEMINI_MODEL="gemini-2.5-flash"
 export ZSH_AI_ANTHROPIC_MODEL="claude-3-5-sonnet-20241022"
 export ZSH_AI_OPENAI_MODEL="gpt-4o-mini"
-export ZSH_AI_AUTO_FIX="false"  # Set to enable automatic fixes for typos
+
+# Set pop to use gmail
+# export POP_SMTP_HOST=smtp-mail.outlook.com
+# export POP_SMTP_PORT=587
+# export POP_SMTP_USERNAME=daxisunder@hotmail.com
+# export POP_SMTP_PASSWORD=pjrhwoufwvczawgu
+export POP_FROM=onboarding@resend.dev
+export POP_SIGNATURE="Sent with [Pop](https://github.com/charmbracelet/pop)!"
 
 # XDG runtime dir (onedrive)
 export XDG_RUNTIME_DIR="/run/user/$UID"
 export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
 
+# Set ydotool socket path
+export YDOTOOL_SOCKET="$HOME/.ydotool_socket"
+
 # Add scripts to PATH
-export SCRIPTS_DIR="~/projects/dotfiles/scripts"
+export SCRIPTS_DIR="$HOME/projects/dotfiles/scripts"
 export PATH="$PATH:$SCRIPTS_DIR"
 
 # Make all scripts executable
 if [ -d "$SCRIPTS_DIR" ]; then
-  find "$SCRIPTS_DIR" -type f -name '.*' -exec chmod +x {} \;
+  find "$SCRIPTS_DIR" -type f -exec chmod +x {} \;
 fi
 
 # Set prompt
@@ -81,7 +91,8 @@ setopt hist_find_no_dups
 setopt no_case_glob            # Case insensitive autocompletions
 setopt no_case_match           # Case insensitive autocompletions
 setopt globdots                # Include dotfiles in globbing
-setopt auto_menu menu_complete # Automatically highlight first element of completion menu
+setopt auto_menu               # Automatically highlight first element of completion menu
+setopt menu_complete           # Use menu completion
 setopt list_packed             # The completion menu takes less space
 setopt auto_list               # Automatically list choices on ambiguous completion
 setopt complete_in_word        # Complete from both ends of a word
@@ -92,7 +103,7 @@ setopt interactive_comments    # Allow comments in interactive shell
 
 # Set comment color (zsh-syntax-highlighting)
 typeset -A ZSH_HIGHLIGHT_STYLES
-ZSH_HIGHLIGHT_STYLES[comment]="fg=#494868"
+ZSH_HIGHLIGHT_STYLES[comment]="fg=#565f89"
 
 # Load completion engine
 autoload -Uz compinit
@@ -156,42 +167,63 @@ function command_not_found_handler {
     return 127
 }
 
-# Archive extraction (usage: ex <file>)
-ex() {
-  if [ -f "$1" ] ; then
-    case $1 in
-      *.tar.bz2)   tar xjf $1    ;;
-      *.tar.gz)    tar xzf $1    ;;
-      *.bz2)       bunzip2 $1    ;;
-      *.rar)       unrar x $1    ;;
-      *.gz)        gunzip $1     ;;
-      *.tar)       tar xf $1     ;;
-      *.tbz2)      tar xjf $1    ;;
-      *.tgz)       tar xzf $1    ;;
-      *.zip)       unzip $1      ;;
-      *.Z)         uncompress $1 ;;
-      *.7z)        7z x $1       ;;
-      *.deb)       ar x $1       ;;
-      *.tar.xz)    tar xf $1     ;;
-      *.tar.zst)   unzstd xf $1  ;;
-      *)           echo "'$1' cannot be extracted via ex()" ;;
-    esac
-  else
-    echo "'$1' is not a valid file"
-  fi
+# Archive extraction (usage: extract <file>)
+# Github: https://github.com/xvoland/Extract/blob/master/extract.sh
+function extract {
+    if [ $# -eq 0 ]; then
+        # display usage if no parameters given
+        echo "Usage: extract <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz|.zlib|.cso|.zst>"
+        echo "       extract <path/file_name_1.ext> [path/file_name_2.ext] [path/file_name_3.ext]"
+    fi
+    for n in "$@"; do
+        if [ ! -f "$n" ]; then
+          echo "'$n' - file doesn't exist"
+          return 1
+        fi
+        case "${n%,}" in
+          *.cbt|*.tar.bz2|*.tar.gz|*.tar.xz|*.tbz2|*.tgz|*.txz|*.tar)
+              tar --auto-compress -xvf "$n" ;;
+          *.lzma)      unlzma "$n" ;;
+          *.lz4)       lz4 -d "$n" ;;
+          *.appimage)  ./"$n" --appimage-extract ;;
+          *.tar.lz4)   tar --use-compress-program=lz4 -xvf "$n" ;;
+          *.tar.br)    tar --use-compress-program=pbzip2 -xvf "$n" ;;
+          *.bz2)       bunzip2 "$n" ;;
+          *.cbr|*.rar) unrar x -ad "$n" ;;
+          *.gz)        gunzip "$n" ;;
+          *.cbz|*.epub|*.zip) unzip "$n" ;;
+          *.z)         uncompress "$n" ;;
+          *.7z|*.apk|*.arj|*.cab|*.cb7|*.chm|*.deb|*.iso|*.lzh|*.msi|*.pkg|*.rpm|*.udf|*.wim|*.xar|*.vhd)
+              7z x "$n" ;;
+          *.xz)        unxz "$n" ;;
+          *.exe)       cabextract "$n" ;;
+          *.cpio)      cpio -id < "$n" ;;
+          *.cba|*.ace) unace x "$n" ;;
+          *.zpaq)      zpaq x "$n" ;;
+          *.arc)       arc e "$n" ;;
+          *.cso)       ciso 0 "$n" "$n.iso" && extract "$n.iso" && rm -f "$n" ;;
+          *.zlib)      zlib-flate -uncompress < "$n" > "${n%.*zlib}" && rm -f "$n" ;;
+          *.dmg)
+              mnt_dir=$(mktemp -d)
+              hdiutil mount "$n" -mountpoint "$mnt_dir"
+              echo "Mounted at: $mnt_dir" ;;
+          *.tar.zst)   tar -I zstd -xvf "$n" ;;
+          *.zst)       zstd -d "$n" ;;
+          *)
+              echo "extract: '$n' - unknown archive method"
+              return 1
+              ;;
+        esac
+    done
 }
 
-# Check archlinux plugin commands here: https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/archlinux
+# Check plugin commands here: https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/<plugin-name>
 plugins=(
-    archlinux
     auto-notify
     colored-man-pages
-    colorize
     fancy-ctrl-z
-    git
     safe-paste
     sudo
-    web-search
     you-should-use
     zsh-ai
     zsh-autopair
@@ -218,9 +250,9 @@ alias .2='cd ../..'
 alias .3='cd ../../..'
 alias .4='cd ../../../..'
 alias .5='cd ../../../../..'
-alias cp='cp -i' # Confirm before overwriting something
-alias mv='mv -i' # Confirm before overwriting something
-alias rm='rm -i' # Confirm before removing something
+alias cpv='cp -vi' # Confirm before overwriting something (verbose)
+alias mvv='mv -vi' # Confirm before overwriting something (verbose)
+alias rmv='rm -vi' # Confirm before removing something (verbose)
 alias mkdir='mkdir -p' # Create parent directories on the fly
 alias ping='ping -c 5'
 alias df='df -h'
@@ -260,6 +292,7 @@ alias src='source ~/.zshrc'
 alias ttc='tty-clock -C6 -c'
 alias expacs="expac -S '%r/%n: %D'" # List dependencies w/o additional info
 alias n='nvim'
+alias v='vim'
 alias e='emacs -nw'
 alias dv='dirs -v'
 alias grep='grep --color=auto'
@@ -279,7 +312,7 @@ source <(fzf --zsh)
 
 # FZF theme
 export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS \
-  --style full
+  --style=full \
   --highlight-line \
   --info=inline-right \
   --ansi \
@@ -356,6 +389,9 @@ source /usr/share/nvm/init-nvm.sh
 
 # Copilot CLI aliases
 eval "$(gh copilot alias -- zsh)"
+
+# Cheatsheet integration
+export CHEAT_USE_FZF=true
 
 # Display Pokemon-colorscripts
 # Project page: https://gitlab.com/phoneybadger/pokemon-colorscripts#on-other-distros-and-macos
