@@ -270,7 +270,7 @@ alias yqi='yay -Qi'
 alias ysi='yay -Si'
 alias ysii='yay -Sii' # List reverse dependencies
 alias yrq='yay -Rsn $(yay -Qdtq)' # List & remove all unneeded dependencies
-alias yi="yay -Slq|fzf -m --preview 'cat <(yay -Qi {1}|grep -e \"Install Reason\";echo '') <(yay`` -Si {1}) <(yay -Fl {1}|awk \"{print \$2}\")' | xargs -ro yay -S"
+alias yi="yay -Slq|fzf -m --preview 'bat --color=always <(yay -Qi {1}|grep -e \"Install Reason\";echo '') <(yay`` -Si {1}) <(yay -Fl {1}|awk \"{print \$2}\")' | xargs -ro yay -S"
 alias yu="yay -Qq|fzf -m --preview \"yay -Qil {}\" | xargs -ro yay -Rsn"
 alias psyu='sudo pacman -Syu'
 alias psyyu='sudo pacman -Syyu' # Update only standard packages
@@ -306,6 +306,7 @@ alias jctl='journalctl -p 3' # Show logs with priority 3 and above (errors)
 alias fz="fzf --preview 'bat --color=always -n {}'"
 alias wcp='wl-color-picker'
 alias wcpc='wl-color-picker clipboard'
+alias wkb='wvkbd-mobintl -L 240 -R 6'
 
 # FZF integration + key bindings (CTRL R for fuzzy history finder)
 source <(fzf --zsh)
@@ -343,6 +344,11 @@ export FZF_CTRL_T_OPTS="
 export FZF_ALT_C_OPTS="
   --walker-skip .git,node_modules,target
   --preview 'eza --tree --color=always {}'"
+# CTRL-Y to copy the command into clipboard using pbcopy
+export FZF_CTRL_R_OPTS="
+  --bind 'ctrl-y:execute-silent(echo -n {2..} | pbcopy)+abort'
+  --color header:italic
+  --header 'Press CTRL-Y to copy command into clipboard'"
 
 # Zoxide integration
 eval "$(zoxide init zsh)"
@@ -393,6 +399,9 @@ eval "$(gh copilot alias -- zsh)"
 # Cheatsheet integration
 export CHEAT_USE_FZF=true
 
+# televisiion integration
+eval "$(tv init zsh)"
+
 # Display Pokemon-colorscripts
 # Project page: https://gitlab.com/phoneybadger/pokemon-colorscripts#on-other-distros-and-macos
 #pokemon-colorscripts --no-title -s -r
@@ -402,4 +411,3 @@ export CHEAT_USE_FZF=true
 
 # Auto-start "zombie-zfetch"
 source $HOME/.config/zfetch/zfetchrc
-
