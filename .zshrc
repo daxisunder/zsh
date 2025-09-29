@@ -32,8 +32,7 @@ source $HOME/projects/dotfiles/api.env
 export ZSH_AI_PROVIDER="ollama" # (anthropic (default), ollama (local), gemini, opennai)
 export ZSH_AI_OLLAMA_MODEL="llama3.2"
 export ZSH_AI_GEMINI_MODEL="gemini-2.5-flash"
-export ZSH_AI_ANTHROPIC_MODEL="claude-3-5-sonnet-20241022"
-export ZSH_AI_OPENAI_MODEL="gpt-4o-mini"
+export ZSH_AI_PROMPT_EXTEND="Always prefer modern CLI tools like ripgrep, fd, and bat."
 
 # Set pop to use gmail
 # export POP_SMTP_HOST=smtp-mail.outlook.com
@@ -74,6 +73,9 @@ export BAT_STYLE="full"
 
 # Set neovim as manpager
 export MANPAGER="nvim +Man!"
+
+# Use QEMU/KVM without sudo permissions
+export LIBVIRT_DEFAULT_URI="qemu:///system"
 
 # History
 HISTFILE=~/.zsh_history
@@ -306,6 +308,7 @@ alias jctl='journalctl -p 3' # Show logs with priority 3 and above (errors)
 alias fz="fzf --preview 'bat --color=always -n {}'"
 alias wcp='wl-color-picker'
 alias wcpc='wl-color-picker clipboard'
+alias gstat='/home/daxis/projects/dotfiles/scripts/Show-GitStatusBash.sh'
 
 # FZF integration + key bindings (CTRL R for fuzzy history finder)
 source <(fzf --zsh)
