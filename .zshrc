@@ -2,28 +2,36 @@
 [[ $- != *i* ]] && return
 
 # If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/.local/bin/:$PATH"
+export PATH="/usr/local/bin:$PATH"
 export PATH="/usr/bin:$PATH"
+
+# OMZ path
+export ZSH="$HOME/.oh-my-zsh"
 
 # Cargo path
 export PATH="$PATH:$HOME/.cargo/bin"
 
 # Created by `pipx` on 2025-02-10 20:34:32
-export PATH="$PATH:~/.local/bin"
+export PATH="$PATH:$HOME/.local/bin"
 
 # Ruby path
-export PATH="$PATH:~/.local/share/gem/ruby/3.3.0/bin"
+export PATH="$PATH:$HOME/.local/share/gem/ruby/3.3.0/bin"
 
 # Node path
 export PATH="$PATH:/usr/bin/node"
-export PATH="$PATH:~/node_modules/.bin"
+export PATH="$PATH:$HOME/node_modules/.bin"
 export NODE_EXTRA_CA_CERTS="/etc/ssl/certs/ACCVRAIZ1.pem"
+
+# Flutter path
+export PATH="$HOME/fvm/default/bin:$PATH"
 
 # Emacs path
 export PATH="$HOME/.config/emacs/bin:$PATH"
 
-# OMZ path
-export ZSH="$HOME/.oh-my-zsh"
+# Flatpak exports path
+export PATH="/var/lib/flatpak/exports/share:$PATH"
 
 # Source api keys (has to be sourced before zsh-ai gemini provider)
 source $HOME/projects/dotfiles/api.env
@@ -61,13 +69,16 @@ fi
 # Set prompt
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
+# To customize prompt, run `p10k configure` or edit ~/projects/dotfiles/.p10k.zsh.
+[[ ! -f ~/projects/dotfiles/.p10k.zsh ]] || source ~/projects/dotfiles/.p10k.zsh
+
 # Set editor
 export EDITOR="nvim"
 export SUDO_EDITOR="${EDITOR}"
 export VISUAL="${EDITOR}"
 
 # Set bat as manpager
-export BAT_THEME="ansi"
+export BAT_THEME="Dracula"
 export BAT_STYLE="full"
 #export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 
@@ -76,6 +87,15 @@ export MANPAGER="nvim +Man!"
 
 # Use QEMU/KVM without sudo permissions
 export LIBVIRT_DEFAULT_URI="qemu:///system"
+
+# Compilation flags
+export ARCHFLAGS="-arch $(uname -m)"
+
+# Kitty default terminal
+export TERM="xterm-kitty"
+
+# Change zsh-cheatsheet keymap to CTRL O (default is CTRL H)
+export ZSH_CHEATSHEET_BIND="^O"
 
 # History
 HISTFILE=~/.zsh_history
@@ -93,6 +113,7 @@ setopt hist_find_no_dups
 setopt no_case_glob            # Case insensitive autocompletions
 setopt no_case_match           # Case insensitive autocompletions
 setopt globdots                # Include dotfiles in globbing
+setopt extended_glob           # Advanced globbing patterns
 setopt auto_menu               # Automatically highlight first element of completion menu
 setopt menu_complete           # Use menu completion
 setopt list_packed             # The completion menu takes less space
@@ -102,28 +123,22 @@ setopt correct                 # Auto-corrections
 setopt autocd                  # Change directory just by typing its name
 setopt prompt_subst            # Enable command substitution in prompt
 setopt interactive_comments    # Allow comments in interactive shell
+setopt vi                      # Use vi keybindings
 
 # Set comment color (zsh-syntax-highlighting)
 typeset -A ZSH_HIGHLIGHT_STYLES
 ZSH_HIGHLIGHT_STYLES[comment]="fg=#565f89"
 
-# Set rust completion
-fpath+=~/.zfunc
-
 # Load completion engine
 autoload -Uz compinit
-
 for dump in ~/.config/zsh/zcompdump(N.mh+24); do
   compinit -d ~/.config/zsh/zcompdump
 done
-
 compinit -C -d ~/.config/zsh/zcompdump
-
 autoload -Uz add-zsh-hook
 autoload -Uz vcs_info
 precmd () { vcs_info }
 _comp_options+=(globdots)
-
 zstyle ':completion:*' verbose true
 zstyle ':completion:*:*:*:*:*' menu select
 zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS} 'ma=0\;33'
@@ -145,17 +160,14 @@ zle -N expand-or-complete-with-dots
 bindkey "^I" expand-or-complete-with-dots
 
 # Set command not found handler (fetch pacman files database first with pacman -Fy)
-
 function command_not_found_handler {
-    local purple='\e[1;35m' bright='\e[0;1m' green='\e[1;32m' reset='\e[0m'
+    local purple=$'\e[1;35m' bright=$'\e[0;1m' green=$'\e[1;32m' reset=$'\e[0m'
     printf 'zsh: Command not found!: %s\n' "$1"
-
     local entries=(
         ${(f)"$(pacman -F --machinereadable -- "/usr/bin/$1")"}
     )
-
     if (( ${#entries[@]} )); then
-        printf "${bright}$1${reset} may be found in the following packages:\n"
+        printf "${bright}%s${reset} may be found in the following packages:\n" "$1"
         local pkg=""
         for entry in "${entries[@]}"; do
             local fields=(${(0)entry})
@@ -163,29 +175,31 @@ function command_not_found_handler {
                 printf "${purple}%s/${bright}%s ${green}%s${reset}\n" \
                     "${fields[1]}" "${fields[2]}" "${fields[3]}"
                 printf '    /%s\n' "${fields[4]}"
-                printf '    → Install with: %s\n' \
-                    "${green}sudo pacman -S ${fields[2]}${reset}" \
-                    "${green}yay -S ${fields[2]}${reset}"
+                printf '    → Install with: %s\n' "${green}sudo pacman -S ${fields[2]}${reset}"
+                printf '    → Install with: %s\n' "${green}yay -S ${fields[2]}${reset}"
                 pkg="${fields[2]}"
             fi
         done
     else
         printf "${bright}No package provides '/usr/bin/$1'.${reset}\n"
         printf "You may want to search the AUR manually:\n"
-        printf "    → ${green}yay -Ss $1${reset}\n"
+        printf "    → %syay -Ss $1%s\n" "$green" "$reset"
     fi
-
     return 127
 }
 
+# Edit command with $EDITOR
+autoload -z edit-command-line
+zle -N edit-command-line
+bindkey '^X' edit-command-line
 
-# Archive extraction (usage: extract <file>)
+# Archive extraction (usage: ex <file>)
 # Github: https://github.com/xvoland/Extract/blob/master/extract.sh
-function extract {
+function ex {
     if [ $# -eq 0 ]; then
         # display usage if no parameters given
-        echo "Usage: extract <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz|.zlib|.cso|.zst>"
-        echo "       extract <path/file_name_1.ext> [path/file_name_2.ext] [path/file_name_3.ext]"
+        echo "Usage: ex <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz|.zlib|.cso|.zst>"
+        echo "       ex <path/file_name_1.ext> [path/file_name_2.ext] [path/file_name_3.ext]"
     fi
     for n in "$@"; do
         if [ ! -f "$n" ]; then
@@ -222,7 +236,7 @@ function extract {
           *.tar.zst)   tar -I zstd -xvf "$n" ;;
           *.zst)       zstd -d "$n" ;;
           *)
-              echo "extract: '$n' - unknown archive method"
+              echo "ex: '$n' - unknown archive method"
               return 1
               ;;
         esac
@@ -233,19 +247,18 @@ function extract {
 plugins=(
     auto-notify
     colored-man-pages
-    fancy-ctrl-z
+    git
     safe-paste
+    shellfirm
     sudo
     you-should-use
-    zsh-ai
+    # zsh-ai
     zsh-autopair
     zsh-autosuggestions
     zsh-syntax-highlighting
-    zsh-vi-mode
+    zsh-system-clipboard
+    zsh-vi-man
 )
-
-# Replace zsh's default readkey engine (ZLE to NEX)
-ZVM_READKEY_ENGINE=$ZVM_READKEY_ENGINE_NEX
 
 # Source Oh My Zsh
 source $ZSH/oh-my-zsh.sh
@@ -270,7 +283,7 @@ alias ping='ping -c 5'
 alias df='df -h'
 alias du='du -h'
 alias ysua='yay -Sua' # Update only AUR packages
-alias yd='yay --devel'
+alias yd='yay --devel && sudo flatpak update' # Update AUR/development packages + flatpaks
 alias yrsn='yay -Rsn'
 alias yrsu='yay -Rsu'
 alias yrsnu='yay -Rsnu'
@@ -282,9 +295,10 @@ alias yqi='yay -Qi'
 alias ysi='yay -Si'
 alias ysii='yay -Sii' # List reverse dependencies
 alias yrq='yay -Rsn $(yay -Qdtq)' # List & remove all unneeded dependencies
-alias yi="yay -Slq|fzf -m --preview 'bat --color=always <(yay -Qi {1}|grep -e \"Install Reason\";echo '') <(yay`` -Si {1}) <(yay -Fl {1}|awk \"{print \$2}\")' | xargs -ro yay -S"
-alias yu="yay -Qq|fzf -m --preview \"yay -Qil {}\" | xargs -ro yay -Rsn"
-alias psyu='sudo pacman -Syu'
+alias ysc='yay -Sc' # Clean cached packages
+alias yi="yay -Slq|fzf -m --preview-window=right:75% --preview 'bat -f <(yay -Qi {1}|grep -e \"Install Reason\";echo '') <(yay`` -Sii {1}) <(yay -Fl {1}|awk \"{print \$2}\")'|xargs -ro yay -S"
+alias yu="yay -Qq|fzf -m --preview-window=right:75% --preview 'bat -f <(yay -Qi {1}|grep -e \"Install Reason\";echo '') <(yay`` -Sii {1}) <(yay -Ql {1}|awk \"{print \$2}\")'|xargs -ro yay -Rsn"
+alias psyu='sudo pacman -Syu && sudo flatpak update' # Update standard packages + flatpaks
 alias psyyu='sudo pacman -Syyu' # Update only standard packages
 alias prsn='sudo pacman -Rsn'
 alias prsu='sudo pacman -Rsu'
@@ -297,10 +311,11 @@ alias pqi='pacman -Qi'
 alias psi='pacman -Si'
 alias psii='pacman -Sii' # List reverse dependencies
 alias prq='sudo pacman -Rsn $(pacman -Qtdq)' # List & remove all unneeded dependencies
+alias psc='sudo pacman -Sc' # Clean cached packages
 alias unlock='sudo rm -f /var/lib/pacman/db.lck' # Unlock pacman
 alias ftldr='compgen -c | fzf | xargs tldr' # Search for man pages with tldr + fzf (print page to stdout)
 alias fman='compgen -c | fzf | xargs man' # Search for man pages with man + fzf (view page with $MANPAGER)
-alias src='source ~/.zshrc'
+alias src='source $HOME/.zshrc'
 alias ttc='tty-clock -C6 -c'
 alias expacs="expac -S '%r/%n: %D'" # List dependencies w/o additional info
 alias n='nvim'
@@ -315,10 +330,17 @@ alias pscpu='ps auxf | sort -nr -k 3 | head -10' # Show top 10 CPU-consuming pro
 alias ssn='sudo shutdown now'
 alias sr='sudo reboot'
 alias jctl='journalctl -p 3' # Show logs with priority 3 and above (errors)
-alias fz="fzf --preview 'bat --color=always -n {}'"
+alias fz="fzf --preview-window=right:75% --preview 'bat -n --color=always {}'"
 alias wcp='wl-color-picker'
 alias wcpc='wl-color-picker clipboard'
-alias gstat='/home/daxis/projects/dotfiles/scripts/Show-GitStatusBash.sh'
+alias gstat='$HOME/projects/dotfiles/scripts/Show-GitStatusBash.sh'
+alias zsh='nvim .zshrc'
+alias nls='nuls -lag'
+
+# Colorize --help output with bat
+help() {
+    "$@" --help 2>&1 | bat -plhelp
+}
 
 # FZF integration + key bindings (CTRL R for fuzzy history finder)
 source <(fzf --zsh)
@@ -366,10 +388,7 @@ export FZF_CTRL_R_OPTS="
 eval "$(zoxide init zsh)"
 
 # Zellij integration
-eval "$(zellij setup --generate-auto-start zsh)"
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+# eval "$(zellij setup --generate-auto-start zsh)"
 
 # Atuin integration (pretty history)
 . "$HOME/.atuin/bin/env"
@@ -377,10 +396,6 @@ eval "$(atuin init zsh)"
 
 # Wikiman integration
 source /usr/share/wikiman/widgets/widget.zsh
-
-# Batman integration
-export BAT_THEME="Dracula"
-eval "$(batman --export-env)"
 
 # Pay-respects (better command-not-found) integration
 eval "$(pay-respects zsh)"
@@ -394,6 +409,29 @@ function y() {
 	rm -f -- "$tmp"
 }
 
+# Yazi file picker integration (bind to ALT-Y)
+yazi_pick_path() {
+  local file=$(yazi --chooser-file=>(cat))
+  [[ -z "$file" ]] && zle redisplay && return
+  LBUFFER+="\"$file\""
+  zle redisplay
+}
+zle -N yazi_pick_path
+bindkey '\ey' yazi_pick_path
+
+# Fancy-ctrl-z integration (CTRL Z to toggle between fg and bg)
+fancy-ctrl-z () {
+  if [[ $#BUFFER -eq 0 ]]; then
+    BUFFER="fg"
+    zle accept-line -w
+  else
+    zle push-input -w
+    zle clear-screen -w
+  fi
+}
+zle -N fancy-ctrl-z
+bindkey '^Z' fancy-ctrl-z
+
 # Carapace integration (argument completion)
 export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense' # optional
 zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
@@ -405,14 +443,25 @@ source /home/daxis/.config/broot/launcher/bash/br
 # NVM integration
 source /usr/share/nvm/init-nvm.sh
 
-# Copilot CLI aliases
-eval "$(gh copilot alias -- zsh)"
-
 # Cheatsheet integration
 export CHEAT_USE_FZF=true
 
 # televisiion integration
 eval "$(tv init zsh)"
+
+# FZF-navigator
+source ~/.config/fzf-navigator.sh >> ~/.${SHELL##*/}rc
+export FZF_NAVIGATOR_HIDE_HELP=1
+export FZF_NAVIGATOR_SHOW_HIDDEN=1
+export FZF_NAVIGATOR_BINDINGS="
+  ctrl-h:toggle_hidden_files, \
+  ctrl-d:toggle_file_details, \
+  alt-b:go_back, alt-f:go_forward, \
+  ~:go_home, \
+  alt-p:go_to_parent"
+
+# GitArbor TUI
+export PATH="$PATH:/home/daxis/.gitarbor/bin"
 
 # Display Pokemon-colorscripts
 # Project page: https://gitlab.com/phoneybadger/pokemon-colorscripts#on-other-distros-and-macos
