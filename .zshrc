@@ -7,31 +7,30 @@ export PATH="$HOME/.local/bin/:$PATH"
 export PATH="/usr/local/bin:$PATH"
 export PATH="/usr/bin:$PATH"
 
-# OMZ path
-export ZSH="$HOME/.oh-my-zsh"
+# XDG Base Directory specification
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
 
 # Cargo path
-export PATH="$PATH:$HOME/.cargo/bin"
-
-# Created by `pipx` on 2025-02-10 20:34:32
-export PATH="$PATH:$HOME/.local/bin"
+export PATH="$HOME/.cargo/bin:$PATH"
 
 # Ruby path
-export PATH="$PATH:$HOME/.local/share/gem/ruby/3.3.0/bin"
+export PATH="$HOME/.local/share/gem/ruby/3.3.0/bin:$PATH"
 
-# Node path
-export PATH="$PATH:/usr/bin/node"
-export PATH="$PATH:$HOME/node_modules/.bin"
-export NODE_EXTRA_CA_CERTS="/etc/ssl/certs/ACCVRAIZ1.pem"
-
-# Flutter path
-export PATH="$HOME/fvm/default/bin:$PATH"
+# Go path
+export GOPATH=$HOME/go
+export PATH=$GOPATH/bin:$PATH
 
 # Emacs path
 export PATH="$HOME/.config/emacs/bin:$PATH"
 
 # Flatpak exports path
 export PATH="/var/lib/flatpak/exports/share:$PATH"
+
+# GitArbor TUI
+export PATH="$HOME/.gitarbor/bin:$PATH"
 
 # Source api keys (has to be sourced before zsh-ai gemini provider)
 source $HOME/projects/dotfiles/api.env
@@ -42,7 +41,7 @@ export ZSH_AI_OLLAMA_MODEL="llama3.2"
 export ZSH_AI_GEMINI_MODEL="gemini-2.5-flash"
 export ZSH_AI_PROMPT_EXTEND="Always prefer modern CLI tools like ripgrep, fd, and bat."
 
-# Set pop to use gmail
+# Set pop to use outlook SMTP server (for sending emails from CLI)
 # export POP_SMTP_HOST=smtp-mail.outlook.com
 # export POP_SMTP_PORT=587
 # export POP_SMTP_USERNAME=daxisunder@hotmail.com
@@ -59,7 +58,7 @@ export YDOTOOL_SOCKET="$HOME/.ydotool_socket"
 
 # Add scripts to PATH
 export SCRIPTS_DIR="$HOME/projects/dotfiles/scripts"
-export PATH="$PATH:$SCRIPTS_DIR"
+export PATH="$SCRIPTS_DIR:$PATH"
 
 # Make all scripts executable
 if [ -d "$SCRIPTS_DIR" ]; then
@@ -78,7 +77,7 @@ export SUDO_EDITOR="${EDITOR}"
 export VISUAL="${EDITOR}"
 
 # Set bat as manpager
-export BAT_THEME="Dracula"
+export BAT_THEME="base16-256"
 export BAT_STYLE="full"
 #export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 
@@ -93,9 +92,6 @@ export ARCHFLAGS="-arch $(uname -m)"
 
 # Kitty default terminal
 export TERM="xterm-kitty"
-
-# Change zsh-cheatsheet keymap to CTRL O (default is CTRL H)
-export ZSH_CHEATSHEET_BIND="^O"
 
 # History
 HISTFILE=~/.zsh_history
@@ -113,6 +109,7 @@ setopt hist_find_no_dups
 setopt no_case_glob            # Case insensitive autocompletions
 setopt no_case_match           # Case insensitive autocompletions
 setopt globdots                # Include dotfiles in globbing
+setopt globcomplete            # Enable globbing in completion
 setopt extended_glob           # Advanced globbing patterns
 setopt auto_menu               # Automatically highlight first element of completion menu
 setopt menu_complete           # Use menu completion
@@ -123,7 +120,7 @@ setopt correct                 # Auto-corrections
 setopt autocd                  # Change directory just by typing its name
 setopt prompt_subst            # Enable command substitution in prompt
 setopt interactive_comments    # Allow comments in interactive shell
-setopt vi                      # Use vi keybindings
+setopt chaselinks              # Follow symbolic links when changing directories
 
 # Set comment color (zsh-syntax-highlighting)
 typeset -A ZSH_HIGHLIGHT_STYLES
@@ -193,6 +190,17 @@ autoload -z edit-command-line
 zle -N edit-command-line
 bindkey '^X' edit-command-line
 
+# Clear backbuffer/screen with CTRL L
+function clear-screen-and-scrollback() {
+    printf '\x1Bc'
+    zle clear-screen
+}
+zle -N clear-screen-and-scrollback
+bindkey '^L' clear-screen-and-scrollback
+
+# zsh-vi-man
+ZVM_MAN_PAGER='nvim'
+
 # Archive extraction (usage: ex <file>)
 # Github: https://github.com/xvoland/Extract/blob/master/extract.sh
 function ex {
@@ -247,18 +255,25 @@ function ex {
 plugins=(
     auto-notify
     colored-man-pages
-    git
+    fancy-ctrl-z
+    # git
     safe-paste
     shellfirm
     sudo
+    vi-mode
     you-should-use
+    zoxide
     # zsh-ai
     zsh-autopair
     zsh-autosuggestions
+    # zsh-expand
     zsh-syntax-highlighting
     zsh-system-clipboard
     zsh-vi-man
 )
+
+# OMZ path
+export ZSH="$HOME/.oh-my-zsh"
 
 # Source Oh My Zsh
 source $ZSH/oh-my-zsh.sh
@@ -270,7 +285,7 @@ alias la='eza -a --tree --level=1 --icons'
 alias l.='eza -a | egrep "^\."'  # Show only hidden files
 alias q='exit'
 alias z='cd'
-alias ..='cd ..'
+alias .1='cd ..'
 alias .2='cd ../..'
 alias .3='cd ../../..'
 alias .4='cd ../../../..'
@@ -296,10 +311,10 @@ alias ysi='yay -Si'
 alias ysii='yay -Sii' # List reverse dependencies
 alias yrq='yay -Rsn $(yay -Qdtq)' # List & remove all unneeded dependencies
 alias ysc='yay -Sc' # Clean cached packages
-alias yi="yay -Slq|fzf -m --preview-window=right:75% --preview 'bat -f <(yay -Qi {1}|grep -e \"Install Reason\";echo '') <(yay`` -Sii {1}) <(yay -Fl {1}|awk \"{print \$2}\")'|xargs -ro yay -S"
-alias yu="yay -Qq|fzf -m --preview-window=right:75% --preview 'bat -f <(yay -Qi {1}|grep -e \"Install Reason\";echo '') <(yay`` -Sii {1}) <(yay -Ql {1}|awk \"{print \$2}\")'|xargs -ro yay -Rsn"
+alias yi="yay -Slq|fzf -m --preview-window=right:75% --preview 'bat -p <(yay -Qi {1}|grep -e \"Install Reason\";echo \"\") <(yay -Sii {1}) <(yay -Fl {1}|awk \"{print \$2}\")'|xargs -ro yay -S"
+alias yu="yay -Qq|fzf -m --preview-window=right:75% --preview 'bat -p <(yay -Qi {1}|grep -e \"Install Reason\";echo \"\") <(yay`` -Sii {1}) <(yay -Ql {1}|awk \"{print \$2}\")'|xargs -ro yay -Rsn"
 alias psyu='sudo pacman -Syu && sudo flatpak update' # Update standard packages + flatpaks
-alias psyyu='sudo pacman -Syyu' # Update only standard packages
+alias psyyu='sudo pacman -Syyu' # Update only standard packages and force refresh databases (useful when mirrors are out of sync)
 alias prsn='sudo pacman -Rsn'
 alias prsu='sudo pacman -Rsu'
 alias prsnu='sudo pacman -Rsnu'
@@ -310,11 +325,9 @@ alias pqet='pacman -Qet'
 alias pqi='pacman -Qi'
 alias psi='pacman -Si'
 alias psii='pacman -Sii' # List reverse dependencies
-alias prq='sudo pacman -Rsn $(pacman -Qtdq)' # List & remove all unneeded dependencies
+alias prq='sudo pacman -Rsn $(pacman -Qdtq)' # List & remove all unneeded dependencies
 alias psc='sudo pacman -Sc' # Clean cached packages
 alias unlock='sudo rm -f /var/lib/pacman/db.lck' # Unlock pacman
-alias ftldr='compgen -c | fzf | xargs tldr' # Search for man pages with tldr + fzf (print page to stdout)
-alias fman='compgen -c | fzf | xargs man' # Search for man pages with man + fzf (view page with $MANPAGER)
 alias src='source $HOME/.zshrc'
 alias ttc='tty-clock -C6 -c'
 alias expacs="expac -S '%r/%n: %D'" # List dependencies w/o additional info
@@ -342,11 +355,16 @@ help() {
     "$@" --help 2>&1 | bat -plhelp
 }
 
+# Colorize manpages with bat (pager = less)
+mann() {
+  man $1 | bat -l man -p
+}
+
 # FZF integration + key bindings (CTRL R for fuzzy history finder)
 source <(fzf --zsh)
 
 # FZF theme
-export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS \
+export FZF_DEFAULT_OPTS=" \
   --style=full \
   --highlight-line \
   --info=inline-right \
@@ -384,9 +402,6 @@ export FZF_CTRL_R_OPTS="
   --color header:italic
   --header 'Press CTRL-Y to copy command into clipboard'"
 
-# Zoxide integration
-eval "$(zoxide init zsh)"
-
 # Zellij integration
 # eval "$(zellij setup --generate-auto-start zsh)"
 
@@ -398,7 +413,7 @@ eval "$(atuin init zsh)"
 source /usr/share/wikiman/widgets/widget.zsh
 
 # Pay-respects (better command-not-found) integration
-eval "$(pay-respects zsh)"
+# eval "$(pay-respects zsh)"
 
 # Yazi integration
 function y() {
@@ -419,7 +434,20 @@ yazi_pick_path() {
 zle -N yazi_pick_path
 bindkey '\ey' yazi_pick_path
 
-# Fancy-ctrl-z integration (CTRL Z to toggle between fg and bg)
+# SuperFile cd-on-quit
+spf() {
+    os=$(uname -s)
+    if [[ "$os" == "Linux" ]]; then
+        export SPF_LAST_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/superfile/lastdir"
+    fi
+    command spf "$@"
+    [ ! -f "$SPF_LAST_DIR" ] || {
+        . "$SPF_LAST_DIR"
+        rm -f -- "$SPF_LAST_DIR" > /dev/null
+    }
+}
+
+# Fancy-ctrl-z integration (doesn't work if set before sourcing OMZ)
 fancy-ctrl-z () {
   if [[ $#BUFFER -eq 0 ]]; then
     BUFFER="fg"
@@ -440,13 +468,7 @@ source <(carapace _carapace)
 # Broot integration
 source /home/daxis/.config/broot/launcher/bash/br
 
-# NVM integration
-source /usr/share/nvm/init-nvm.sh
-
-# Cheatsheet integration
-export CHEAT_USE_FZF=true
-
-# televisiion integration
+# Television integration
 eval "$(tv init zsh)"
 
 # FZF-navigator
@@ -459,9 +481,6 @@ export FZF_NAVIGATOR_BINDINGS="
   alt-b:go_back, alt-f:go_forward, \
   ~:go_home, \
   alt-p:go_to_parent"
-
-# GitArbor TUI
-export PATH="$PATH:/home/daxis/.gitarbor/bin"
 
 # Display Pokemon-colorscripts
 # Project page: https://gitlab.com/phoneybadger/pokemon-colorscripts#on-other-distros-and-macos
