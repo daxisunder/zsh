@@ -21,7 +21,7 @@ export PATH="$HOME/.local/share/gem/ruby/3.3.0/bin:$PATH"
 
 # Go path
 export GOPATH=$HOME/go
-export PATH=$GOPATH/bin:$PATH
+export PATH=$PATH:$GOPATH/bin
 
 # Emacs path
 export PATH="$HOME/.config/emacs/bin:$PATH"
@@ -36,7 +36,7 @@ export PATH="$HOME/.gitarbor/bin:$PATH"
 source $HOME/projects/dotfiles/api.env
 
 # ZSH AI integration with local AI models
-export ZSH_AI_PROVIDER="ollama" # (anthropic (default), ollama (local), gemini, opennai)
+export ZSH_AI_PROVIDER="gemini" # (anthropic (default), ollama (local), gemini, opennai)
 export ZSH_AI_OLLAMA_MODEL="llama3.2"
 export ZSH_AI_GEMINI_MODEL="gemini-2.5-flash"
 export ZSH_AI_PROMPT_EXTEND="Always prefer modern CLI tools like ripgrep, fd, and bat."
@@ -45,7 +45,7 @@ export ZSH_AI_PROMPT_EXTEND="Always prefer modern CLI tools like ripgrep, fd, an
 # export POP_SMTP_HOST=smtp-mail.outlook.com
 # export POP_SMTP_PORT=587
 # export POP_SMTP_USERNAME=daxisunder@hotmail.com
-# export POP_SMTP_PASSWORD=pjrhwoufwvczawgu
+# export POP_SMTP_PASSWORD=
 export POP_FROM=onboarding@resend.dev
 export POP_SIGNATURE="Sent with [Pop](https://github.com/charmbracelet/pop)!"
 
@@ -258,12 +258,12 @@ plugins=(
     fancy-ctrl-z
     # git
     safe-paste
-    shellfirm
+    # shellfirm
     sudo
     vi-mode
     you-should-use
     zoxide
-    # zsh-ai
+    zsh-ai
     zsh-autopair
     zsh-autosuggestions
     # zsh-expand
@@ -349,6 +349,7 @@ alias wcpc='wl-color-picker clipboard'
 alias gstat='$HOME/projects/dotfiles/scripts/Show-GitStatusBash.sh'
 alias zsh='nvim .zshrc'
 alias nls='nuls -lag'
+alias rww='rm /tmp/wttrbar-*.json && wttrbar --location banjaluka >/dev/null 2>&1 && ~/.config/hypr/scripts/Refresh.sh >/dev/null 2>&1' # Rfresh wttrbar weather widget
 
 # Colorize --help output with bat
 help() {
@@ -357,7 +358,7 @@ help() {
 
 # Colorize manpages with bat (pager = less)
 mann() {
-  man $1 | bat -l man -p
+  man $1 | col -bx | bat -plman
 }
 
 # FZF integration + key bindings (CTRL R for fuzzy history finder)
@@ -413,7 +414,7 @@ eval "$(atuin init zsh)"
 source /usr/share/wikiman/widgets/widget.zsh
 
 # Pay-respects (better command-not-found) integration
-# eval "$(pay-respects zsh)"
+eval "$(pay-respects zsh)"
 
 # Yazi integration
 function y() {
