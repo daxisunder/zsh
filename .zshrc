@@ -32,13 +32,23 @@ export PATH="/var/lib/flatpak/exports/share:$PATH"
 # GitArbor TUI
 export PATH="$HOME/.gitarbor/bin:$PATH"
 
+# OpenHuman path
+export PATH="$HOME/Applications/openhuman_e76783d639bc72fe9d7d8ac279780b7f:$PATH"
+
+# Opencode path
+export PATH=/home/daxis/.opencode/bin:$PATH
+. "$HOME/.local/share/../bin/env"
+
+# Google depot_tools path
+export PATH="$HOME/depot_tools:$PATH"
+
 # Source api keys (has to be sourced before zsh-ai gemini provider)
 source $HOME/projects/dotfiles/api.env
 
 # ZSH AI integration with local AI models
 export ZSH_AI_PROVIDER="gemini" # (anthropic (default), ollama (local), gemini, opennai)
 export ZSH_AI_OLLAMA_MODEL="llama3.2"
-export ZSH_AI_GEMINI_MODEL="gemini-2.5-flash"
+export ZSH_AI_GEMINI_MODEL="gemini-3-flash-preview"
 export ZSH_AI_PROMPT_EXTEND="Always prefer modern CLI tools like ripgrep, fd, and bat."
 
 # Set pop to use outlook SMTP server (for sending emails from CLI)
@@ -98,17 +108,22 @@ export CARGO_BUILD_JOBS=8
 # Kitty default terminal
 export TERM="xterm-kitty"
 
+# For xdg-nvfilechooser.nvim
+# Doesn't work, needs more testing
+# export XDG_NVFILECHOOSER_TERMINAL="xterm-kitty"
+
 # History
 HISTFILE=~/.zsh_history
 HISTSIZE=1000000
 SAVEHIST=1000000
-setopt appendhistory
-setopt sharehistory
+setopt append_history
+setopt share_history
 setopt hist_ignore_space
 setopt hist_ignore_all_dups
 setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
+setopt hist_expire_dups_first
 
 # Set some cool ZSH options ('set -o' to see all options)
 setopt no_case_glob            # Case insensitive autocompletions
@@ -116,6 +131,7 @@ setopt no_case_match           # Case insensitive autocompletions
 setopt globdots                # Include dotfiles in globbing
 setopt globcomplete            # Enable globbing in completion
 setopt extended_glob           # Advanced globbing patterns
+setopt numeric_glob_sort       # Sort glob results numerically
 setopt auto_menu               # Automatically highlight first element of completion menu
 setopt menu_complete           # Use menu completion
 setopt list_packed             # The completion menu takes less space
@@ -130,6 +146,9 @@ setopt chaselinks              # Follow symbolic links when changing directories
 # Set comment color (zsh-syntax-highlighting)
 typeset -A ZSH_HIGHLIGHT_STYLES
 ZSH_HIGHLIGHT_STYLES[comment]="fg=#565f89"
+
+# Set auto-suggestions color (default fg=8 is too dark with kitty color8=#1a1b26)
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#565f89'
 
 # Load completion engine
 autoload -Uz compinit
@@ -316,8 +335,8 @@ alias ysi='yay -Si'
 alias ysii='yay -Sii' # List reverse dependencies
 alias yrq='yay -Rsn $(yay -Qdtq)' # List & remove all unneeded dependencies
 alias ysc='yay -Sc' # Clean cached packages
-alias yi="yay -Slq|fzf -m --preview-window=right:75% --preview 'bat -p <(yay -Qi {1}|grep -e \"Install Reason\";echo \"\") <(yay -Sii {1}) <(yay -Fl {1}|awk \"{print \$2}\")'|xargs -ro yay -S"
-alias yu="yay -Qq|fzf -m --preview-window=right:75% --preview 'bat -p <(yay -Qi {1}|grep -e \"Install Reason\";echo \"\") <(yay`` -Sii {1}) <(yay -Ql {1}|awk \"{print \$2}\")'|xargs -ro yay -Rsn"
+alias yi="yay -Slq | fzf -m --preview-window=right:75% --preview 'bat -p <(yay -Qi {1} | grep -e \"Install Reason\"; echo \"\") <(yay -Sii {1}) <(yay -Fl {1} | awk \"{print \$2}\" || yay -Ql {1} | awk \"{print \$2}\")' | xargs -ro yay -S"
+alias yu="yay -Qq | fzf -m --preview-window=right:75% --preview 'bat -p <(yay -Qi {1} | grep -e \"Install Reason\";echo \"\") <(yay -Sii {1}) <(yay -Ql {1} | awk \"{print \$2}\")' | xargs -ro yay -Rsn"
 alias psyu='sudo pacman -Syu && sudo flatpak update' # Update standard packages + flatpaks
 alias psyyu='sudo pacman -Syyu' # Update only standard packages and force refresh databases (useful when mirrors are out of sync)
 alias prsn='sudo pacman -Rsn'
@@ -354,7 +373,7 @@ alias wcpc='wl-color-picker clipboard'
 alias gstat='$HOME/projects/dotfiles/scripts/Show-GitStatusBash.sh'
 alias zsh='nvim .zshrc'
 alias nls='nuls -lag'
-alias rww='rm /tmp/wttrbar-*.json && wttrbar --location banjaluka >/dev/null 2>&1 && ~/.config/hypr/scripts/Refresh.sh >/dev/null 2>&1' # Rfresh wttrbar weather widget
+alias rww='rm /tmp/wttrbar-*.json && wttrbar --location banjaluka >/dev/null 2>&1 && ~/.config/hypr/scripts/Refresh.sh >/dev/null 2>&1' # Refresh wttrbar weather widget and waybar
 
 # Colorize --help output with bat
 help() {
