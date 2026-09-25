@@ -3,9 +3,9 @@
 
 # If you come from bash you might have to change your $PATH.
 export PATH="$HOME/bin:$PATH"
-export PATH="$HOME/.local/bin/:$PATH"
-export PATH="/usr/local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 export PATH="/usr/bin:$PATH"
+export PATH="/usr/local/bin:$PATH"
 
 # XDG Base Directory specification
 export XDG_CONFIG_HOME="$HOME/.config"
@@ -20,8 +20,8 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/share/gem/ruby/3.3.0/bin:$PATH"
 
 # Go path
-export GOPATH=$HOME/go
-export PATH=$PATH:$GOPATH/bin
+export GOPATH="$HOME/go"
+export PATH="$GOPATH/bin:$PATH"
 
 # Emacs path
 export PATH="$HOME/.config/emacs/bin:$PATH"
@@ -36,11 +36,8 @@ export PATH="$HOME/.gitarbor/bin:$PATH"
 export PATH="$HOME/Applications/openhuman_e76783d639bc72fe9d7d8ac279780b7f:$PATH"
 
 # Opencode path
-export PATH=/home/daxis/.opencode/bin:$PATH
-. "$HOME/.local/share/../bin/env"
-
-# Google depot_tools path
-export PATH="$HOME/depot_tools:$PATH"
+export PATH="$HOME/.opencode/bin:$PATH"
+. "$HOME/.local/bin/env"
 
 # Source api keys (has to be sourced before zsh-ai gemini provider)
 source $HOME/projects/dotfiles/api.env
@@ -142,33 +139,55 @@ setopt prompt_subst            # Enable command substitution in prompt
 setopt interactive_comments    # Allow comments in interactive shell
 setopt chase_links             # Follow symbolic links when changing directories
 
-# Set comment color (zsh-syntax-highlighting)
-typeset -A ZSH_HIGHLIGHT_STYLES
-ZSH_HIGHLIGHT_STYLES[comment]="fg=#565f89"
-
-# Set auto-suggestions color (default fg=8 is too dark with kitty color8=#1a1b26)
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#565f89'
-
 # Load completion engine
-autoload -Uz compinit
-for dump in ~/.config/zsh/zcompdump(N.mh+24); do
-  compinit -d ~/.config/zsh/zcompdump
-done
-compinit -C -d ~/.config/zsh/zcompdump
-autoload -Uz add-zsh-hook
-autoload -Uz vcs_info
-precmd () { vcs_info }
-_comp_options+=(globdots)
-zstyle ':completion:*' verbose true
-zstyle ':completion:*:*:*:*:*' menu select
-zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS} 'ma=0\;33'
-zstyle ':completion:*' matcher-list \
-    'm:{a-zA-Z}={A-Za-z}' \
-    '+r:|[._-]=* r:|=*' \
-    '+l:|=*'
-zstyle ':completion:*:warnings' format "%B%F{red}No matches for:%f %F{magenta}%d%b"
-zstyle ':completion:*:descriptions' format '%F{yellow}[-- %d --]%f'
-zstyle ':vcs_info:*' formats ' %B%s-[%F{magenta}%f %F{yellow}%b%f]-'
+# autoload -Uz compinit
+# for dump in ~/.config/zsh/zcompdump(N.mh+24); do
+#   compinit -d ~/.config/zsh/zcompdump
+# done
+# compinit -C -d ~/.config/zsh/zcompdump
+# autoload -Uz add-zsh-hook
+# autoload -Uz vcs_info
+# precmd () { vcs_info }
+# _comp_options+=(globdots)
+# zstyle ':completion:*' verbose true
+# zstyle ':completion:*:*:*:*:*' menu select
+# zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS} 'ma=0\;33'
+# zstyle ':completion:*' matcher-list \
+#     'm:{a-zA-Z}={A-Za-z}' \
+#     '+r:|[._-]=* r:|=*' \
+#     '+l:|=*'
+# zstyle ':completion:*:warnings' format "%B%F{red}No matches for:%f %F{magenta}%d%b"
+# zstyle ':completion:*:descriptions' format '%F{yellow}[-- %d --]%f'
+# zstyle ':vcs_info:*' formats ' %B%s-[%F{magenta}%f %F{yellow}%b%f]-'
+
+# Set command not found handler (fetch pacman files database first with pacman -Fy)
+# function command_not_found_handler {
+#     local purple=$'\e[1;35m' bright=$'\e[0;1m' green=$'\e[1;32m' reset=$'\e[0m'
+#     printf 'zsh: Command not found!: %s\n' "$1"
+#     local entries=(
+#         ${(f)"$(pacman -F --machinereadable -- "/usr/bin/$1")"}
+#     )
+#     if (( ${#entries[@]} )); then
+#         printf "${bright}%s${reset} may be found in the following packages:\n" "$1"
+#         local pkg=""
+#         for entry in "${entries[@]}"; do
+#             local fields=(${(0)entry})
+#             if [[ "$pkg" != "${fields[2]}" ]]; then
+#                 printf "${purple}%s/${bright}%s ${green}%s${reset}\n" \
+#                     "${fields[1]}" "${fields[2]}" "${fields[3]}"
+#                 printf '    /%s\n' "${fields[4]}"
+#                 printf '    → Install with: %s\n' "${green}sudo pacman -S ${fields[2]}${reset}"
+#                 printf '    → Install with: %s\n' "${green}yay -S ${fields[2]}${reset}"
+#                 pkg="${fields[2]}"
+#             fi
+#         done
+#     else
+#         printf "${bright}No package provides '/usr/bin/$1'.${reset}\n"
+#         printf "You may want to search the AUR manually:\n"
+#         printf "    → %syay -Ss $1%s\n" "$green" "$reset"
+#     fi
+#     return 127
+# }
 
 # Set waiting dots
 expand-or-complete-with-dots() {
@@ -179,106 +198,14 @@ expand-or-complete-with-dots() {
 zle -N expand-or-complete-with-dots
 bindkey "^I" expand-or-complete-with-dots
 
-# Set command not found handler (fetch pacman files database first with pacman -Fy)
-function command_not_found_handler {
-    local purple=$'\e[1;35m' bright=$'\e[0;1m' green=$'\e[1;32m' reset=$'\e[0m'
-    printf 'zsh: Command not found!: %s\n' "$1"
-    local entries=(
-        ${(f)"$(pacman -F --machinereadable -- "/usr/bin/$1")"}
-    )
-    if (( ${#entries[@]} )); then
-        printf "${bright}%s${reset} may be found in the following packages:\n" "$1"
-        local pkg=""
-        for entry in "${entries[@]}"; do
-            local fields=(${(0)entry})
-            if [[ "$pkg" != "${fields[2]}" ]]; then
-                printf "${purple}%s/${bright}%s ${green}%s${reset}\n" \
-                    "${fields[1]}" "${fields[2]}" "${fields[3]}"
-                printf '    /%s\n' "${fields[4]}"
-                printf '    → Install with: %s\n' "${green}sudo pacman -S ${fields[2]}${reset}"
-                printf '    → Install with: %s\n' "${green}yay -S ${fields[2]}${reset}"
-                pkg="${fields[2]}"
-            fi
-        done
-    else
-        printf "${bright}No package provides '/usr/bin/$1'.${reset}\n"
-        printf "You may want to search the AUR manually:\n"
-        printf "    → %syay -Ss $1%s\n" "$green" "$reset"
-    fi
-    return 127
-}
-
-# Edit command with $EDITOR
-autoload -z edit-command-line
-zle -N edit-command-line
-bindkey '^X' edit-command-line
-
-# Clear backbuffer/screen with CTRL L
-function clear-screen-and-scrollback() {
-    printf '\x1Bc'
-    zle clear-screen
-}
-zle -N clear-screen-and-scrollback
-bindkey '^L' clear-screen-and-scrollback
-
-# zsh-vi-man
-ZVM_MAN_PAGER='nvim'
-
-# Archive extraction (usage: ex <file>)
-# Github: https://github.com/xvoland/Extract/blob/master/extract.sh
-function ex {
-    if [ $# -eq 0 ]; then
-        # display usage if no parameters given
-        echo "Usage: ex <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz|.zlib|.cso|.zst>"
-        echo "       ex <path/file_name_1.ext> [path/file_name_2.ext] [path/file_name_3.ext]"
-    fi
-    for n in "$@"; do
-        if [ ! -f "$n" ]; then
-          echo "'$n' - file doesn't exist"
-          return 1
-        fi
-        case "${n%,}" in
-          *.cbt|*.tar.bz2|*.tar.gz|*.tar.xz|*.tbz2|*.tgz|*.txz|*.tar)
-              tar --auto-compress -xvf "$n" ;;
-          *.lzma)      unlzma "$n" ;;
-          *.lz4)       lz4 -d "$n" ;;
-          *.appimage)  ./"$n" --appimage-extract ;;
-          *.tar.lz4)   tar --use-compress-program=lz4 -xvf "$n" ;;
-          *.tar.br)    tar --use-compress-program=pbzip2 -xvf "$n" ;;
-          *.bz2)       bunzip2 "$n" ;;
-          *.cbr|*.rar) unrar x -ad "$n" ;;
-          *.gz)        gunzip "$n" ;;
-          *.cbz|*.epub|*.zip) unzip "$n" ;;
-          *.z)         uncompress "$n" ;;
-          *.7z|*.apk|*.arj|*.cab|*.cb7|*.chm|*.deb|*.iso|*.lzh|*.msi|*.pkg|*.rpm|*.udf|*.wim|*.xar|*.vhd)
-              7z x "$n" ;;
-          *.xz)        unxz "$n" ;;
-          *.exe)       cabextract "$n" ;;
-          *.cpio)      cpio -id < "$n" ;;
-          *.cba|*.ace) unace x "$n" ;;
-          *.zpaq)      zpaq x "$n" ;;
-          *.arc)       arc e "$n" ;;
-          *.cso)       ciso 0 "$n" "$n.iso" && extract "$n.iso" && rm -f "$n" ;;
-          *.zlib)      zlib-flate -uncompress < "$n" > "${n%.*zlib}" && rm -f "$n" ;;
-          *.dmg)
-              mnt_dir=$(mktemp -d)
-              hdiutil mount "$n" -mountpoint "$mnt_dir"
-              echo "Mounted at: $mnt_dir" ;;
-          *.tar.zst)   tar -I zstd -xvf "$n" ;;
-          *.zst)       zstd -d "$n" ;;
-          *)
-              echo "ex: '$n' - unknown archive method"
-              return 1
-              ;;
-        esac
-    done
-}
+# To avoid issues with redundant .zcompdump cache generation, do not load zsh-completions as a standard plugin.
+fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
+autoload -U compinit && compinit
 
 # Check plugin commands here: https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/<plugin-name>
 plugins=(
     auto-notify
-    colored-man-pages
-    fancy-ctrl-z
+    # fzf-tab
     # git
     safe-paste
     # shellfirm
@@ -286,7 +213,7 @@ plugins=(
     vi-mode
     you-should-use
     zoxide
-    zsh-ai
+    # zsh-ai
     zsh-autopair
     zsh-autosuggestions
     # zsh-expand
@@ -374,14 +301,80 @@ alias zsh='nvim .zshrc'
 alias nls='nuls -lag'
 alias rww='rm /tmp/wttrbar-*.json && wttrbar --location banjaluka >/dev/null 2>&1 && ~/.config/hypr/scripts/Refresh.sh >/dev/null 2>&1' # Refresh wttrbar weather widget and waybar
 
-# Colorize --help output with bat
-help() {
-    "$@" --help 2>&1 | bat -plhelp
-}
+# Remove extra space on the right side of the prompt (for powerlevel10k)
+ZLE_RPROMPT_INDENT=0
 
-# Colorize manpages with bat (pager = less)
-mann() {
-  man $1 | col -bx | bat -plman
+# Set comment color (zsh-syntax-highlighting)
+typeset -A ZSH_HIGHLIGHT_STYLES
+ZSH_HIGHLIGHT_STYLES[comment]="fg=#565f89"
+
+# Set auto-suggestions color (default fg=8 is too dark with kitty color8=#1a1b26)
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#565f89"
+
+# Edit command with $EDITOR
+autoload -z edit-command-line
+zle -N edit-command-line
+bindkey '^X' edit-command-line
+
+# Clear backbuffer/screen with CTRL L
+function clear-screen-and-scrollback() {
+    printf '\x1Bc'
+    zle clear-screen
+}
+zle -N clear-screen-and-scrollback
+bindkey '^L' clear-screen-and-scrollback
+
+# zsh-vi-man
+ZVM_MAN_PAGER='nvim'
+
+# Archive extraction (usage: ex <file>)
+# Github: https://github.com/xvoland/Extract/blob/master/extract.sh
+function ex {
+    if [ $# -eq 0 ]; then
+        # display usage if no parameters given
+        echo "Usage: ex <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz|.zlib|.cso|.zst>"
+        echo "       ex <path/file_name_1.ext> [path/file_name_2.ext] [path/file_name_3.ext]"
+    fi
+    for n in "$@"; do
+        if [ ! -f "$n" ]; then
+          echo "'$n' - file doesn't exist"
+          return 1
+        fi
+        case "${n%,}" in
+          *.cbt|*.tar.bz2|*.tar.gz|*.tar.xz|*.tbz2|*.tgz|*.txz|*.tar)
+              tar --auto-compress -xvf "$n" ;;
+          *.lzma)      unlzma "$n" ;;
+          *.lz4)       lz4 -d "$n" ;;
+          *.appimage)  ./"$n" --appimage-extract ;;
+          *.tar.lz4)   tar --use-compress-program=lz4 -xvf "$n" ;;
+          *.tar.br)    tar --use-compress-program=pbzip2 -xvf "$n" ;;
+          *.bz2)       bunzip2 "$n" ;;
+          *.cbr|*.rar) unrar x -ad "$n" ;;
+          *.gz)        gunzip "$n" ;;
+          *.cbz|*.epub|*.zip) unzip "$n" ;;
+          *.z)         uncompress "$n" ;;
+          *.7z|*.apk|*.arj|*.cab|*.cb7|*.chm|*.deb|*.iso|*.lzh|*.msi|*.pkg|*.rpm|*.udf|*.wim|*.xar|*.vhd)
+              7z x "$n" ;;
+          *.xz)        unxz "$n" ;;
+          *.exe)       cabextract "$n" ;;
+          *.cpio)      cpio -id < "$n" ;;
+          *.cba|*.ace) unace x "$n" ;;
+          *.zpaq)      zpaq x "$n" ;;
+          *.arc)       arc e "$n" ;;
+          *.cso)       ciso 0 "$n" "$n.iso" && extract "$n.iso" && rm -f "$n" ;;
+          *.zlib)      zlib-flate -uncompress < "$n" > "${n%.*zlib}" && rm -f "$n" ;;
+          *.dmg)
+              mnt_dir=$(mktemp -d)
+              hdiutil mount "$n" -mountpoint "$mnt_dir"
+              echo "Mounted at: $mnt_dir" ;;
+          *.tar.zst)   tar -I zstd -xvf "$n" ;;
+          *.zst)       zstd -d "$n" ;;
+          *)
+              echo "ex: '$n' - unknown archive method"
+              return 1
+              ;;
+        esac
+    done
 }
 
 # FZF integration + key bindings (CTRL R for fuzzy history finder)
@@ -398,14 +391,14 @@ export FZF_DEFAULT_OPTS=" \
   --color=fg:#c0caf5 \
   --color=gutter:#16161e \
   --color=header:#ff9e64 \
-  --color=hl+:#2ac3de \
-  --color=hl:#2ac3de \
+  --color=hl+:#ff899d \
+  --color=hl:#9fe044 \
   --color=info:#545c7e \
   --color=marker:#ff007c \
   --color=pointer:#ff007c \
   --color=prompt:#2ac3de \
   --color=query:#c0caf5:regular \
-  --color=scrollbar:#1a1b26 \
+  --color=scrollbar:#000000 \
   --color=separator:#ff9e64 \
   --color=spinner:#ff007c \
 "
@@ -426,8 +419,22 @@ export FZF_CTRL_R_OPTS="
   --color header:italic
   --header 'Press CTRL-Y to copy command into clipboard'"
 
+# Fzf-Tab configuration
+zstyle ':completion:*:git-checkout:*' sort false
+zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
+zstyle ':fzf-tab:*' use-fzf-default-opts yes
+zstyle ':fzf-tab:*' switch-group '<' '>'
+
+# Colorize --help output with bat
+help() {
+    "$@" --help 2>&1 | bat -plhelp
+}
+
 # Zellij integration
-# eval "$(zellij setup --generate-auto-start zsh)"
+eval "$(zellij setup --generate-auto-start zsh)"
 
 # Atuin integration (pretty history)
 . "$HOME/.atuin/bin/env"
@@ -471,7 +478,7 @@ spf() {
     }
 }
 
-# Fancy-ctrl-z integration (doesn't work if set before sourcing OMZ)
+# Fancy-ctrl-z integration
 fancy-ctrl-z () {
   if [[ $#BUFFER -eq 0 ]]; then
     BUFFER="fg"
@@ -486,7 +493,7 @@ bindkey '^Z' fancy-ctrl-z
 
 # Unified mkdir + zoxide jump
 mkz() {
-    if [ -z "$1" ]; then
+    if [ "$#" -ne 1 ]; then
         printf 'Usage: mkz <directory>\n' >&2
         return 1
     fi
@@ -504,23 +511,15 @@ source /home/daxis/.config/broot/launcher/bash/br
 # Television integration
 eval "$(tv init zsh)"
 
-# FZF-navigator
-source ~/.config/fzf-navigator.sh >> ~/.${SHELL##*/}rc
-export FZF_NAVIGATOR_HIDE_HELP=1
-export FZF_NAVIGATOR_SHOW_HIDDEN=1
-export FZF_NAVIGATOR_BINDINGS="
-  ctrl-h:toggle_hidden_files, \
-  ctrl-d:toggle_file_details, \
-  alt-b:go_back, alt-f:go_forward, \
-  ~:go_home, \
-  alt-p:go_to_parent"
-
 # Display Pokemon-colorscripts
 # Project page: https://gitlab.com/phoneybadger/pokemon-colorscripts#on-other-distros-and-macos
 #pokemon-colorscripts --no-title -s -r
 
 # Display colorscripts
 #colorscript -r
+
+# Iris auto-complete
+eval "$(iris init zsh)"
 
 # Auto-start "zombie-zfetch"
 source $HOME/.config/zfetch/zfetchrc
